@@ -11,7 +11,7 @@ description: ''
 
 
 <p><img src="/blog/2020-05-15-r-and-python-a-beautiful-combination_files/reticulate.png" width="500" height="300" /></p>
-<p>Hello everybody. Today I will be doing a short demonstration on how R and Python can be used simultaneously in an R Markdown file. First, let’s load in the reticulate and tidyverse packages in R.</p>
+<p>Hello everybody. Today I will be doing a short demonstration on how R and Python can be used simultaneously in an R Markdown file. This will be done using the Reticulate package in R. Let’s load in the Reticulate and Tidyverse packages in R.</p>
 <pre class="r"><code>library(reticulate)
 library(tidyverse)</code></pre>
 <pre><code>## -- Attaching packages -------------------------------------------------------------- tidyverse 1.3.0 --</code></pre>
@@ -29,12 +29,12 @@ x = []
 for i in range(100):
   x.append(random.randint(1, 1000))
 print(x)</code></pre>
-<pre><code>## [668, 371, 675, 889, 86, 681, 350, 603, 776, 787, 423, 185, 29, 717, 778, 881, 357, 772, 846, 318, 708, 114, 697, 831, 1, 679, 241, 610, 35, 215, 480, 712, 680, 1000, 881, 818, 32, 385, 940, 369, 754, 541, 30, 412, 589, 168, 267, 972, 554, 758, 15, 929, 845, 376, 931, 970, 259, 101, 78, 663, 880, 523, 662, 341, 102, 485, 120, 150, 969, 192, 469, 515, 495, 319, 686, 898, 276, 954, 859, 332, 788, 743, 215, 867, 672, 544, 325, 829, 107, 650, 784, 679, 323, 1000, 821, 856, 508, 327, 518, 857]</code></pre>
+<pre><code>## [91, 831, 784, 507, 974, 267, 176, 552, 445, 84, 934, 75, 204, 627, 452, 130, 317, 712, 405, 486, 554, 236, 653, 954, 981, 324, 15, 402, 528, 927, 797, 212, 782, 447, 152, 961, 412, 91, 542, 27, 118, 101, 18, 209, 734, 986, 739, 733, 911, 419, 151, 316, 87, 983, 747, 285, 980, 14, 26, 118, 812, 194, 155, 480, 781, 348, 25, 509, 610, 133, 589, 478, 286, 632, 821, 741, 268, 80, 175, 672, 607, 827, 297, 550, 392, 265, 377, 350, 996, 93, 881, 681, 266, 115, 276, 552, 493, 647, 614, 341]</code></pre>
 <pre class="python"><code>y = []
 for i in range(100):
   y.append(random.randint(1, 1000))
 print(y)</code></pre>
-<pre><code>## [470, 644, 220, 315, 489, 938, 889, 896, 950, 285, 710, 87, 377, 365, 895, 138, 964, 409, 554, 173, 922, 314, 415, 806, 600, 669, 431, 125, 72, 77, 858, 538, 169, 495, 196, 655, 256, 667, 708, 36, 474, 672, 899, 768, 100, 503, 523, 820, 746, 211, 901, 180, 97, 574, 99, 973, 291, 778, 7, 965, 566, 241, 749, 222, 51, 151, 478, 347, 474, 289, 148, 397, 18, 962, 159, 211, 942, 575, 59, 197, 88, 424, 658, 876, 396, 499, 42, 874, 517, 437, 850, 11, 647, 137, 509, 743, 329, 420, 900, 495]</code></pre>
+<pre><code>## [172, 50, 733, 417, 232, 560, 69, 684, 60, 550, 342, 624, 557, 512, 586, 917, 883, 986, 201, 28, 930, 511, 776, 619, 273, 310, 803, 410, 176, 690, 91, 12, 63, 736, 738, 534, 740, 207, 23, 640, 606, 816, 838, 700, 291, 892, 302, 437, 171, 831, 1000, 425, 167, 673, 541, 713, 632, 291, 291, 82, 845, 716, 645, 215, 329, 571, 443, 609, 981, 572, 60, 544, 14, 866, 437, 41, 701, 4, 127, 121, 911, 629, 321, 619, 783, 166, 282, 351, 610, 498, 278, 910, 792, 152, 94, 148, 77, 650, 700, 307]</code></pre>
 <p>Now, let’s switch over to R. First, we’re going to create a dataframe using our x and y vectors from Python. Then, we’re going to use ggplot2 to create a scatterplot of the two vectors above.</p>
 <pre class="r"><code>df = data.frame(x = py$x, y = py$y)
 ggplot(data = df, aes(x = x, y = y)) + geom_point()</code></pre>

@@ -9,7 +9,7 @@ description: ''
 ---
 ![](/blog/2020-05-15-r-and-python-a-beautiful-combination_files/reticulate.png){width=500px height=300px}
 
-Hello everybody. Today I will be doing a short demonstration on how R and Python can be used simultaneously in an R Markdown file. First, let's load in the reticulate and tidyverse packages in R.
+Hello everybody. Today I will be doing a short demonstration on how R and Python can be used simultaneously in an R Markdown file. This will be done using the Reticulate package in R. Let's load in the Reticulate and Tidyverse packages in R.
 ```{r}
 library(reticulate)
 library(tidyverse)

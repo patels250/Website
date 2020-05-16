@@ -17,8 +17,8 @@
       <pubDate>Fri, 15 May 2020 00:00:00 +0000</pubDate>
       
       <guid>/blog/r-and-python-a-beautiful-combination/</guid>
-      <description>Hello everybody. Today I will be doing a short demonstration on how R and Python can be used simultaneously in an R Markdown file. First, let’s load in the reticulate and tidyverse packages in R.
-library(reticulate)library(tidyverse)## -- Attaching packages -------------------------------------------------------------- tidyverse 1.3.0 --## v ggplot2 3.3.0 v purrr 0.3.4## v tibble 3.0.1 v dplyr 0.8.5## v tidyr 1.0.3 v stringr 1.4.0## v readr 1.</description>
+      <description>Hello everybody. Today I will be doing a short demonstration on how R and Python can be used simultaneously in an R Markdown file. This will be done using the Reticulate package in R. Let’s load in the Reticulate and Tidyverse packages in R.
+library(reticulate)library(tidyverse)## -- Attaching packages -------------------------------------------------------------- tidyverse 1.3.0 --## v ggplot2 3.3.0 v purrr 0.3.4## v tibble 3.0.1 v dplyr 0.8.5## v tidyr 1.</description>
     </item>
     
   </channel>
