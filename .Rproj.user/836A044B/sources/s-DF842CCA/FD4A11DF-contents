@@ -1,0 +1,168 @@
+---
+title: "Project 1 (Exploratory Data Analysis)"
+author: "Sagar Patel"
+date: "3/3/2020"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Introduction:
+
+The two datasets I have chosen are NFL player statistics from the 2019 regular season, as retrieved from Pro-Football-Reference. The first dataset contains rushing stats for all applicable players (variables like rushing attempts, rushing yards, rushing touchdowns, etc.), and the second dataset contains receiving stats for all applicable players (variables like catches, receiving yards, receiving touchdowns, etc.). It is important to note that this list does *not* exclude quarterbacks, but it does exclude passing stats. That is, quarterbacks' rushing and receiving stats are included in the datasets but their passing stats are not. There is also a large number of players such as punters and offensive tackles involved in "trick plays" where they accumulate a very small number of touches/yards but are still included in the datasets.
+
+I have chosen these datasets because I am an avid NFL fan as well as a devoted fantasy football player. I am interested in visualizing this data and seeing which players truly set themselves apart from others in 2019. I believe most, if not all, variables will be positively correlated. This makes sense because the more often a football player possesses the football, the more yards and touchdowns he will likely have.
+
+```{r}
+library(tidyverse)
+library(readxl)
+library(ggrepel)
+library(cluster)
+
+rushing <- read_excel('Rushing.xlsx', 
+    col_types = c('numeric', 'text', 'text', 
+        'numeric', 'text', 'numeric', 'numeric', 
+        'numeric', 'numeric', 'numeric', 
+        'numeric', 'numeric', 'numeric', 
+        'numeric', 'numeric'))
+
+receiving <- read_excel('Receiving.xlsx', 
+    col_types = c('numeric', 'text', 'text', 
+        'numeric', 'text', 'numeric', 'numeric', 
+        'numeric', 'numeric', 'numeric', 
+        'numeric', 'numeric', 'numeric', 
+        'numeric', 'numeric', 'numeric', 
+        'numeric', 'numeric', 'numeric'))
+```
+
+#Tidying:
+
+We will tidy the datasets by first making all positions uppercase, as the original datasets from Pro-Football-Reference had a mix of uppercase and lowercase positions. Then we will be removing variables that are deemed unnecessary. These are either variables that we can create ourselves (e.g. a yards per game variable could be created using the games and yards variables) or variables that will not serve a purpose in our analysis/visualization (such as the "longest play" variable). We will demonstrate the use of the pivot_longer() and pivot_wider() functions on the `rushing` dataset.
+
+```{r}
+rushing$Pos <- toupper(rushing$Pos)
+rushing <- rushing %>% select(-'Rk', -'Y/A', -'Y/G', -'Lng') %>% 
+  rename(Rush_Yds = 'Yds', Rush_TD = 'TD', Rush_1D = '1D')
+
+receiving$Pos <- toupper(receiving$Pos)
+receiving <- receiving %>% 
+  select(-'Rk', -'Ctch%', -'Y/R', -'Y/Tgt', -'R/G', -'Y/G', -'Lng') %>% 
+  rename(Rec_Yds = 'Yds', Rec_TD = 'TD', Rec_1D = '1D')
+
+rushing <- rushing %>% pivot_longer(c(G:Fmb), names_to = 'Stat', values_to = 'Value')
+head(rushing)
+rushing <- rushing %>% pivot_wider(names_from = 'Stat', values_from = 'Value')
+head(rushing)
+```
+
+#Joining/Merging:
+
+For these two datasets, we will be performing a full join. This is because we want a dataset of *all* players who carried or caught the football, but not necessarily did both. Because some players only did one (e.g. caught the ball but did not carry it), we will replace all NAs with 0s. An NA after joining is essentially a 0 because it means the player did not record anything for that statistic. We do not want to remove these players from the full dataset, but rather fill their stats with 0s so descriptive statistics can be determined. Then, we will group all positions that are not quarterback, running back, tight end, and wide receiver into one position called "Other". This will help us exclude the aforementioned trick players with very small stats if need be. Lastly, we will arrange alphabetically by first names.
+
+```{r}
+full_dat <- rushing %>% full_join(receiving)
+full_dat[is.na(full_dat)] <- 0
+full_dat$Pos[full_dat$Pos != 'QB' & full_dat$Pos != 'RB'&
+               full_dat$Pos != 'TE' & full_dat$Pos != 'WR'] <- 'Other'
+full_dat <- full_dat %>% arrange(Player)
+```
+
+#Wrangling:
+
+The first way we will wrangle the data is by using the mutate() function to create two new variables. The first new variable is "Total Yards", which is the sum of "Receiving Yards" and "Rushing Yards". The second new variable is "Total TDs", which is the sum of "Receiving TDs" and "Rushing TDs". Then we will create a new dataset using the select() function called `nums`. `nums` is just the full data without categorical variables. This will be used to generate summary statistics. The `nums` dataframe will be tidied to create the `tidycor` dataframe which will later be used to generate a correlation heatmap. Lastly, we will create three new dataframes using combinations of group_by(), select(), summarize_all(), arrange(), and filter(). The `tm` dataframe contains total stats for each team in the league. The `tm_pos` dataframe contains total stats for each skill position group for each team in the league. The `top` dataframe contains the full stats for the top 30 players in total yards. These new dataframes will be used for visualization.
+
+```{r}
+full_dat <- full_dat %>% mutate(Tot_Yds = Rec_Yds + Rush_Yds, Tot_TD = Rec_TD + Rush_TD)
+
+nums <- full_dat %>% select(-Player, -Tm, -Pos)
+nums %>% summary
+nums %>% cor %>% head()
+tidycor <- cor(nums) %>% as.data.frame %>% rownames_to_column %>% 
+  pivot_longer(-1, names_to='name', values_to='correlation')
+head(tidycor)
+
+tm <- full_dat %>% group_by(Tm) %>% select(-Player, -G, -GS, -Pos)%>%
+  summarize_all(sum) %>% arrange(desc(Tot_Yds)) %>% filter(Tm != '3TM' & Tm != '2TM')
+head(tm)
+
+tm_pos <- full_dat %>% group_by(Tm, Pos) %>% select(-Player, -G, -GS)%>%
+  summarize_all(sum) %>% arrange(desc(Tot_Yds)) %>% filter(Tm != '3TM' & Tm != '2TM')%>%
+  filter(Pos == 'RB' | Pos == 'WR' | Pos == 'TE')
+head(tm_pos)
+
+top <- full_dat %>% arrange(desc(Tot_Yds)) %>% top_n(30, Tot_Yds)
+head(top)
+```
+
+#Visualizing:
+
+We will be making four different visualizations. The first three will be scatterplots that utilize the new dataframes we made above. The fourth will be a correlation heatmap of our numeric variables.
+
+```{r}
+ggplot(tm, aes(Rush_Yds, Rec_Yds, color=Tot_TD)) + geom_point() + xlab('Rushing Yards') +
+  ylab('Receiving Yards') + geom_label_repel(aes(label=Tm), size=2) + 
+  scale_color_gradient(low='red', high='green', name='Total\nTouchdowns') +
+  ggtitle('2019 NFL Regular Season Offensive Proficiency')
+```
+
+This is a scatterplot that shows each team's total rushing yards on the x-axis and total receiving yards on the y-axis. The points are colored by the number of total touchdowns the team's offense scored, with red being a low number of total TDs and green being a high number of total TDs. From this plot we can see the Baltimore Ravens (BAL) were leaps ahead of other teams in terms of total TDs and rushing yardage. Teams like the Cincinnati Bengals (CIN) and Jacksonville Jaguars (JAX) scored fewer total TDs than you would expect them to given their yardage.
+
+```{r}
+ggplot(tm_pos, aes(Rush_Yds, Rec_Yds, color=Pos)) + geom_point() + xlab('Rushing Yards') + 
+  ylab('Receiving Yards') + geom_label_repel(aes(label=Tm), size=1.5) +
+  ggtitle('2019 NFL Regular Season Offensive Proficiency by Position')
+```
+
+This is a scatterplot that shows the total rushing yards on the x-axis and total receiving yards on the y-axis for each position group for each team (e.g. the red point labeled "LAC" is the combined yardage for *all* Los Angeles Chargers running backs). From this plot we can see that the San Francisco 49ers (SFO) had the most rushing yards from running backs, while the Tampa Bay Buccaneers (TAM) had the most receiving yards from wide receivers. The three position groups are quite clearly defined against one another, except where poor wide receiver groups and great tight end groups meet.
+
+```{r}
+ggplot(top, aes(Rush_Yds, Rec_Yds, color=Pos)) + geom_point() + xlab('Rushing Yards') +
+  ylab('Receiving Yards') + geom_label_repel(aes(label=Player), size=1.5, force=1) + 
+  ggtitle('2019 NFL Regular Season Top 30 Players in Total Yards')
+```
+
+This is a scatterplot that shows the total rushing yards on the x-axis and total receiving yards on the y-axis for the top 30 players in total yards. We can see that 17 of the top 30 are running backs, 11 are wide receivers, and only 1 each of quarterbacks and tight ends. There was a very special case in the 2019 NFL Regular Season and his name is Lamar Jackson. Lamar Jackson is a quarterback for the Baltimore Ravens. If you remember from the introduction, QBs are not excluded but their passing stats are. So it is quite remarkable that Lamar Jackson made it into the top 30 players in total yards *without* his passing stats. Even more impressive is that he had the 6th most rushing yards in the league, more than most running backs.
+
+```{r}
+ggplot(tidycor, aes(rowname, name, fill=correlation)) + geom_tile() + 
+  scale_fill_gradient2(low='red', high='green') + 
+  geom_text(aes(label=round(correlation, 2)), color='black', size=2) + 
+  theme(axis.text.x=element_text(angle=90, hjust=1)) + 
+  coord_fixed() + xlab('Stat') + ylab('Stat') + 
+  ggtitle('2019 NFL Regular Season Correlation Heatmap')
+```
+
+This is a correlation heatmap of all of the numeric variables in the full dataset. As predicted in the introduction, most statistics are positively correlated. Receiving stats such as targets, receptions, yards, first downs, and touchdowns are all strongly positively correlated with each other, while rushing stats such as attempts, yards, first downs, and touchdowns are also strongly positively correlated with each other. It is important to note that rushing stats and receiving stats barely, if at all, correlate with each other. This makes sense because outside of a few outliers, wide receivers purely receive and running backs purely rush. An interesting correlation here is the one that age has with other variables. Most of the correlations that age has with other variables are negative. This makes sense because as players age, their performance generally tends to decline.
+
+#Dimensionality Reduction:
+
+We will be performing PAM clustering on all quarterbacks, running backs, wide receivers, and tight ends. This is to exclude trick players who had very small stats. This data will still include players of the aforementioned positions that did not contribute much.
+
+```{r}
+pam_dat <- full_dat %>% filter(Pos != 'Other') %>% select(Rush_Yds, Rec_Yds)
+sil_width <- vector()
+for(i in 2:10){
+pam_fit <- pam(pam_dat, k = i)
+sil_width[i] <- pam_fit$silinfo$avg.width
+}
+ggplot() + geom_line(aes(x=1:10, y=sil_width)) + 
+  scale_x_continuous(name='k', breaks=1:10) + ylab('Silhouette Width')
+```
+
+As we can see here, the silhouette width is greatest at k=3. This means we will have 3 clusters in our PAM clustering.
+
+```{r}
+pam_fit$silinfo$avg.width
+pam1 <- pam_dat %>% pam(k=3)
+pamclust <- full_dat %>% filter(Pos != 'Other') %>% 
+  mutate(cluster=as.factor(pam1$clustering))
+pamclust %>% ggplot(aes(Rush_Yds, Rec_Yds, color=cluster, shape=Pos)) + 
+  geom_point() + xlab('Rushing Yards') + ylab('Receiving Yards') + 
+  ggtitle('2019 NFL Regular Season PAM Clustering')
+```
+
+As you can see above, our PAM clusters generally seem to coincide with position groups. We can interpret the clusters to tell us which players had meaningful impacts for their teams. That is, players in cluster 1 (red) had a meaningful impact in the pass game, players in cluster 3 (blue) had a meaningful impact in the rush game, and players in cluster 2 (green) did not have a meaningful impact for their team.

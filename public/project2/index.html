@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="author" content="Sagar Patel" />
+    <meta name="description" content="Describe your website">
+    <link rel="shortcut icon" type="image/x-icon" href="/img/favicon.ico">
+    <title>Project 2 (Modeling, Testing, and Predicting)</title>
+    <meta name="generator" content="Hugo 0.70.0" />
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    <link rel="stylesheet" type="text/css" href="/css/main.css" />
+    <link rel="stylesheet" type="text/css" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" />
+    <link rel="stylesheet" type="text/css" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,400,200bold,400old" />
+    
+    <!--[if lt IE 9]>
+			<script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+			<script src="https://oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+		<![endif]-->
+
+    
+  </head>
+
+  <body>
+    <div id="wrap">
+
+      
+      <nav class="navbar navbar-default">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="/"><i class="fa fa-home"></i></a>
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+    </div>
+    <div class="navbar-collapse collapse" id="navbar">
+      <ul class="nav navbar-nav navbar-right">
+      
+        
+        <li><a href="/blog/">BLOG</a></li>
+        
+        <li><a href="/projects/">PROJECTS</a></li>
+        
+        <li><a href="/resume/">RESUME</a></li>
+        
+      
+      </ul>
+    </div>
+  </div>
+</nav>
+
+      
+      <div class="container">
+        <div class="blog-post">
+          <h3>
+            <strong><a href="/project2/">Project 2 (Modeling, Testing, and Predicting)</a></strong>
+          </h3>
+        </div>
+        <div class="blog-title">
+          <h4>
+          May 1, 2020
+            &nbsp;&nbsp;
+            
+          </h4>
+        </div>
+        <div class="panel panel-default">
+          <div class="panel-body">
+            <div class="blogpost">
+              
+
+
+<p>#Introduction:</p>
+<p>I am using the same datasets from Project 1. These datasets contain NFL player statistics from the 2019 regular season, as retrieved from Pro-Football-Reference. One dataset contains all rushing stats for applicable players and the other contains all receiving stats for applicable players. For the purposes of this project, these two datasets will be full joined together. We will also only be including skill position players (running back (RB), wide receiver (WR), and tight end (TE)) for this project. Variables that can be retrieved from other variables such as “yards per game” and trivial variables such as “longest play” have been excluded.</p>
+<p>The final dataset has 469 observations (players) for 17 variables. These variables include personal information (such as player name, team, age, and position) as well as numeric statistics (such as games played, receiving yards, rushing yards, receiving touchdowns, rushing touchdowns, etc.). Using the dplyr mutate function, I have created two variables: “Total Yards” which is the sum of receiving and rushing yards and “Total TDs” which is the sum of receiving and rushing TDs. I have also manually created a “Pro_Bowl” binary variable that shows 1 if the player made it to the Pro Bowl and 0 if the player did not make it to the Pro Bowl (the Pro Bowl is an “all-star game” of sorts for the NFL, i.e. only the best players make it to the Pro Bowl).</p>
+<pre class="r"><code>rushing &lt;- read_excel(&#39;Rushing2.xlsx&#39;, 
+    col_types = c(&#39;numeric&#39;, &#39;text&#39;, &#39;text&#39;, 
+        &#39;numeric&#39;, &#39;text&#39;, &#39;numeric&#39;, &#39;numeric&#39;, 
+        &#39;numeric&#39;, &#39;numeric&#39;, &#39;numeric&#39;, 
+        &#39;numeric&#39;, &#39;numeric&#39;, &#39;numeric&#39;, 
+        &#39;numeric&#39;, &#39;numeric&#39;, &#39;numeric&#39;))
+
+receiving &lt;- read_excel(&#39;Receiving2.xlsx&#39;, 
+    col_types = c(&#39;numeric&#39;, &#39;text&#39;, &#39;text&#39;, 
+        &#39;numeric&#39;, &#39;text&#39;, &#39;numeric&#39;, &#39;numeric&#39;, 
+        &#39;numeric&#39;, &#39;numeric&#39;, &#39;numeric&#39;, 
+        &#39;numeric&#39;, &#39;numeric&#39;, &#39;numeric&#39;, 
+        &#39;numeric&#39;, &#39;numeric&#39;, &#39;numeric&#39;, 
+        &#39;numeric&#39;, &#39;numeric&#39;, &#39;numeric&#39;, &#39;numeric&#39;))
+
+rushing$Pos &lt;- toupper(rushing$Pos)
+rushing &lt;- rushing %&gt;% select(-&#39;Rk&#39;, -&#39;Y/A&#39;, -&#39;Y/G&#39;, -&#39;Lng&#39;, -&#39;1D&#39;) %&gt;% 
+  rename(Rush_Yds = &#39;Yds&#39;, Rush_TD = &#39;TD&#39;)
+
+receiving$Pos &lt;- toupper(receiving$Pos)
+receiving &lt;- receiving %&gt;% 
+  select(-&#39;Rk&#39;, -&#39;Ctch%&#39;, -&#39;Y/R&#39;, -&#39;Y/Tgt&#39;, -&#39;R/G&#39;, -&#39;Y/G&#39;, -&#39;Lng&#39;, -&#39;1D&#39;) %&gt;% 
+  rename(Rec_Yds = &#39;Yds&#39;, Rec_TD = &#39;TD&#39;)
+
+full_dat &lt;- rushing %&gt;% full_join(receiving)
+full_dat[is.na(full_dat)] &lt;- 0
+full_dat &lt;- full_dat %&gt;% filter(Pos == &#39;RB&#39; | Pos == &#39;WR&#39; | Pos == &#39;TE&#39;) %&gt;% 
+  mutate(Tot_Yds = Rec_Yds + Rush_Yds, Tot_TD = Rec_TD + Rush_TD) %&gt;% arrange(Player)</code></pre>
+<p>#MANOVA Test:</p>
+<p>First, we will perform a MANOVA test to see whether the number of total yards, total touchdowns, and fumbles show a mean difference across the three different positions (RB, WR, TE). With a p-value of 1.029e-09, this test was significant.</p>
+<pre class="r"><code>man1 &lt;- manova(cbind(Tot_Yds, Tot_TD, Fmb) ~ Pos, data = full_dat)
+summary(man1)</code></pre>
+<pre><code>## Df Pillai approx F num Df den Df Pr(&gt;F)
+## Pos 2 0.11113 9.1197 6 930 1.029e-09 ***
+## Residuals 466
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<p>As a result, we will perform univariate ANOVA tests to see which variables differed specifically. All three univariate ANOVA tests were significant, meaning that rush yards, receiving yards, and fumbles all differed across position groups.</p>
+<pre class="r"><code>summary.aov(man1)</code></pre>
+<pre><code>## Response Tot_Yds :
+## Df Sum Sq Mean Sq F value Pr(&gt;F)
+## Pos 2 5145208 2572604 16.05 1.817e-07 ***
+## Residuals 466 74695144 160290
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Response Tot_TD :
+## Df Sum Sq Mean Sq F value Pr(&gt;F)
+## Pos 2 184.2 92.105 9.9709 5.752e-05 ***
+## Residuals 466 4304.6 9.237
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Response Fmb :
+## Df Sum Sq Mean Sq F value Pr(&gt;F)
+## Pos 2 37.98 18.9884 19.134 1.033e-08 ***
+## Residuals 466 462.46 0.9924
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<p>Finally, we will perform post-hoc t-tests to see which position groups specifically differed in each variable. Because we performed 13 total tests (1 MANOVA, 3 ANOVAs, and 9 t-tests), we will have to make a Bonferroni correction to our significance level. The Bonferroni corrected significance level is 0.00385. Using this new significance level, we can see that RBs and TEs as well as WRs and TEs differed significantly in total yards. RBs and TEs as well as RBs and WRs differed significantly in both total TDs and fumbles.</p>
+<pre class="r"><code>full_dat %&gt;% group_by(Pos) %&gt;% summarize(mean(Rush_Yds), mean(Rec_Yds), mean(Fmb))</code></pre>
+<pre><code>## # A tibble: 3 x 4
+##   Pos   `mean(Rush_Yds)` `mean(Rec_Yds)` `mean(Fmb)`
+##   &lt;chr&gt;            &lt;dbl&gt;           &lt;dbl&gt;       &lt;dbl&gt;
+## 1 RB              355.              153.       1.01 
+## 2 TE                1.26            221.       0.244
+## 3 WR               10.0             374.       0.546</code></pre>
+<pre class="r"><code>pairwise.t.test(full_dat$Tot_Yds, full_dat$Pos, p.adj = &#39;none&#39;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  full_dat$Tot_Yds and full_dat$Pos 
+## 
+##    RB      TE     
+## TE 2.7e-08 -      
+## WR 0.00509 0.00045
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(full_dat$Tot_TD, full_dat$Pos, p.adj = &#39;none&#39;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  full_dat$Tot_TD and full_dat$Pos 
+## 
+##    RB      TE    
+## TE 1.6e-05 -     
+## WR 0.0018  0.0731
+## 
+## P value adjustment method: none</code></pre>
+<pre class="r"><code>pairwise.t.test(full_dat$Fmb, full_dat$Pos, p.adj = &#39;none&#39;)</code></pre>
+<pre><code>## 
+##  Pairwise comparisons using t tests with pooled SD 
+## 
+## data:  full_dat$Fmb and full_dat$Pos 
+## 
+##    RB      TE    
+## TE 2.4e-09 -     
+## WR 3.1e-05 0.0081
+## 
+## P value adjustment method: none</code></pre>
+<p>In terms of assumptions, it is not likely that this dataset meets any of the assumptions of a MANOVA test. Observations are not independent because if, for example, one running back is receiving lots of carries and yards, then other running backs on the same team are not. The data is also not normal. This is because EVERY player (of the given positions of course) who touched the ball even once during the season is included in this dataset. This means the data for each variable is heavily right/positively skewed.</p>
+<p>#Randomization Test:</p>
+<p>We will perform a randomization test to see if the mean Total Yards differs between WRs and RBs. The hypotheses are as follows:</p>
+<p>H<sub>O</sub>: Mean total yards are the same for wide receivers and running backs.</p>
+<p>H<sub>A</sub>: Mean total yards are different for wide receivers and running backs.</p>
+<p>We can see that the mean total yards for RBs is 507.9104 and the mean total yards for WRs is 383.9954. This is a mean difference of 123.9151.</p>
+<pre class="r"><code>WRRB &lt;- full_dat %&gt;% filter(Pos != &#39;TE&#39;) %&gt;% select(Pos, Tot_Yds)
+WRRB %&gt;% group_by(Pos) %&gt;% summarize(means = mean(Tot_Yds))</code></pre>
+<pre><code>## # A tibble: 2 x 2
+##   Pos   means
+##   &lt;chr&gt; &lt;dbl&gt;
+## 1 RB     508.
+## 2 WR     384.</code></pre>
+<pre class="r"><code>WRRB %&gt;% group_by(Pos) %&gt;% summarize(means = mean(Tot_Yds)) %&gt;% 
+  summarize(`mean_diff:` = diff(means))</code></pre>
+<pre><code>## # A tibble: 1 x 1
+##   `mean_diff:`
+##          &lt;dbl&gt;
+## 1        -124.</code></pre>
+<p>Using 5,000 random permutations and our original mean difference of 123.9151, we get a p-value of 0.011. This is lower than our significance level of 0.05 meaning we reject the null hypothesis. The randomization test shows that mean total yards differs between wide receivers and running backs.</p>
+<pre class="r"><code>set.seed(1234)
+rand_dist &lt;- vector()
+for(i in 1:5000){
+new &lt;- data.frame(Tot_Yds = sample(WRRB$Tot_Yds), Pos = WRRB$Pos)
+rand_dist[i] &lt;- mean(new[new$Pos == &#39;RB&#39;,]$Tot_Yds) - mean(new[new$Pos == &#39;WR&#39;,]$Tot_Yds)}
+
+hist(rand_dist, main = &#39;&#39;, ylab = &#39;&#39;); abline(v = -123.9151, col = &#39;red&#39;)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-6-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>mean(rand_dist &gt; 123.9151 | rand_dist &lt; -123.9151)</code></pre>
+<pre><code>## [1] 0.0126</code></pre>
+<p>#Linear Regression</p>
+<p>We will perform a linear regression in which we attempt to predict the number of total touchdowns a player will score based on the number of rushing attempts and receiving targets he has. The coefficient estimates can be interpreted as follows: for every rushing attempt a player has above the mean, his total TDs will increase by 2.836e-02. For every receiving target a player has above the mean, his total TDs will increase by 4.841e-02. The adjusted R-squared value of 0.6746 means 67.46% of the variation in total TDs is explained by rushing attempts and receiving targets. A graph of the interaction can be found below. As shown in both the graph and the regression summary, the interaction is not significant.</p>
+<pre class="r"><code>centered &lt;- full_dat %&gt;% mutate(Att_c = full_dat$Att - mean(full_dat$Att),
+                                Tgt_c = full_dat$Tgt - mean(full_dat$Tgt))
+linfit &lt;- lm(Tot_TD ~ Att_c * Tgt_c, data = centered)
+summary(linfit)</code></pre>
+<pre><code>##
+## Call:
+## lm(formula = Tot_TD ~ Att_c * Tgt_c, data = centered)
+##
+## Residuals:
+## Min 1Q Median 3Q Max
+## -8.4390 -0.7333 -0.1435 0.5573 9.4202
+##
+## Coefficients:
+## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) 2.440e+00 8.196e-02 29.763 &lt;2e-16 ***
+## Att_c 2.836e-02 1.503e-03 18.873 &lt;2e-16 ***
+## Tgt_c 4.841e-02 2.224e-03 21.768 &lt;2e-16 ***
+## Att_c:Tgt_c -5.943e-05 4.309e-05 -1.379 0.169
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1
+##
+## Residual standard error: 1.767 on 465 degrees of freedom
+## Multiple R-squared: 0.6767, Adjusted R-squared: 0.6746
+## F-statistic: 324.4 on 3 and 465 DF, p-value: &lt; 2.2e-16</code></pre>
+<pre class="r"><code>interact_plot(linfit, pred = Att_c, modx = Tgt_c)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-7-1.png" width="768" style="display: block; margin: auto;" /></p>
+<p>As we can see from the plot below, the data is not linear. The Breusch-Pagan test for homoskedasticity gives us a p-value of &lt;2.2e-16. This means we reject the null hypothesis, meaning the data is not homoskedastic. The Shapiro-Wilk normality test also gives us a p-value of &lt;2.2e-16. This means we reject the null hypothesis, meaning the data is not normal. The data has failed all three assumptions.</p>
+<pre class="r"><code>centered %&gt;% ggplot(aes(Att_c, Tgt_c)) + geom_point() + geom_smooth(method = &#39;lm&#39;, se = F)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-8-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>resids &lt;- linfit$residuals
+bptest(linfit)</code></pre>
+<pre><code>## 
+##  studentized Breusch-Pagan test
+## 
+## data:  linfit
+## BP = 126.74, df = 3, p-value &lt; 2.2e-16</code></pre>
+<pre class="r"><code>shapiro.test(resids)</code></pre>
+<pre><code>## 
+##  Shapiro-Wilk normality test
+## 
+## data:  resids
+## W = 0.9022, p-value &lt; 2.2e-16</code></pre>
+<p>Next we will recompute the regression results with robust standard errors. The standard error for mean-centered rushing attempts doubled and the standard error for mean-centered receiving targets almost doubled. The end result is the same: both rushing attempts and receiving targets are significant predictors of total touchdowns, but their interaction is not.</p>
+<pre class="r"><code>coeftest(linfit, vcov = vcovHC(linfit))</code></pre>
+<pre><code>##
+## t test of coefficients:
+##
+## Estimate Std. Error t value Pr(&gt;|t|)
+## (Intercept) 2.4395e+00 8.3181e-02 29.3275 &lt;2e-16 ***
+## Att_c 2.8357e-02 3.1302e-03 9.0594 &lt;2e-16 ***
+## Tgt_c 4.8408e-02 3.9077e-03 12.3877 &lt;2e-16 ***
+## Att_c:Tgt_c -5.9427e-05 1.7603e-04 -0.3376 0.7358
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<p>Because our assumptions were violated, it is more effective to use bootstrapped standard errors. We will perform bootstrapping by resampling rows and not residuals. The standard errors from bootstrapping are more similar to the robust standard errors than to the original standard errors.</p>
+<pre class="r"><code>samp_distn &lt;- replicate(5000,{
+boot_dat &lt;- sample_frac(centered, replace=T)
+bootfit &lt;- lm(Tot_TD ~ Att_c * Tgt_c, data = boot_dat)
+coef(bootfit)
+})
+samp_distn %&gt;% t %&gt;% as.data.frame %&gt;% summarize_all(sd)</code></pre>
+<pre><code>##   (Intercept)       Att_c       Tgt_c  Att_c:Tgt_c
+## 1  0.08141069 0.002957481 0.003371705 0.0001349728</code></pre>
+<p>#Logistic Regression</p>
+<p>We will perform a logistic regression in which we attempt to predict whether a player will make the Pro Bowl based on the number of games they played and their game statistics. The significant predictors were games played, rushing attempts, rushing yards, and receiving touchdowns. When we exponentiate the significant coefficients, we can see that for each game a player plays, his odds of making the Pro Bowl are multiplied by 0.458. For every rushing attempt a player has, his odds of making the Pro Bowl are multiplied by 0.872. For every rushing yard a player has, his odds of making the Pro Bowl are multiplied by 1.037. For every receiving touchdown a player has, his odds of making the Pro Bowl are multiplied by 1.957.</p>
+<pre class="r"><code>class_diag &lt;- function(probs, truth){
+tab &lt;- table(factor(probs &gt; .5, levels = c(&#39;FALSE&#39;, &#39;TRUE&#39;)), truth)
+acc = sum(diag(tab))/sum(tab)
+sens = tab[2,2]/colSums(tab)[2]
+spec = tab[1,1]/colSums(tab)[1]
+ppv = tab[2,2]/rowSums(tab)[2]
+if(is.numeric(truth) == FALSE &amp; is.logical(truth) == FALSE) truth &lt;- as.numeric(truth) - 1
+ord &lt;- order(probs, decreasing = TRUE)
+probs &lt;- probs[ord]; truth &lt;- truth[ord]
+TPR = cumsum(truth)/max(1, sum(truth)) 
+FPR = cumsum(!truth)/max(1, sum(!truth))
+dup &lt;- c(probs[-1] &gt;= probs[-length(probs)], FALSE)
+TPR &lt;- c(0, TPR[!dup], 1); FPR &lt;- c(0, FPR[!dup], 1)
+n &lt;- length(TPR)
+auc &lt;- sum(((TPR[-1] + TPR[-n])/2) * (FPR[-1] - FPR[-n]))
+data.frame(acc, sens, spec, ppv, auc)
+}
+logfit &lt;- glm(Pro_Bowl ~ Pos + G + GS + Att + Rush_Yds + Rush_TD + Tgt + Rec + Rec_Yds + 
+                Rec_TD + Fmb, data = full_dat, family = &#39;binomial&#39;)
+coeftest(logfit)</code></pre>
+<pre><code>##
+## z test of coefficients:
+##
+## Estimate Std. Error z value Pr(&gt;|z|)
+## (Intercept) -8.0444822 4.4298803 -1.8160 0.069377 .
+## PosTE 3.7127644 3.8286451 0.9697 0.332179
+## PosWR -0.4671569 4.0924960 -0.1141 0.909119
+## G -0.7805162 0.3064787 -2.5467 0.010874 *
+## GS 0.3166868 0.1933932 1.6375 0.101520
+## Att -0.1368809 0.0685336 -1.9973 0.045795 *
+## Rush_Yds 0.0365031 0.0157421 2.3188 0.020405 *
+## Rush_TD 0.1043694 0.2076301 0.5027 0.615196
+## Tgt 0.0653351 0.0497437 1.3134 0.189037
+## Rec -0.0109918 0.0650121 -0.1691 0.865739
+## Rec_Yds 0.0028810 0.0032229 0.8939 0.371359
+## Rec_TD 0.6712951 0.2281887 2.9418 0.003263 **
+## Fmb 0.0707341 0.3037270 0.2329 0.815849
+## ---
+## Signif. codes: 0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1
+&#39; &#39; 1</code></pre>
+<pre class="r"><code>exp(coef(logfit))</code></pre>
+<pre><code>## (Intercept) PosTE PosWR G GS Att Rush_Yds
+## 3.208675e-04 4.096690e+01 6.267818e-01 4.581694e-01
+1.372573e+00 8.720741e-01 1.037178e+00
+## Rush_TD Tgt Rec Rec_Yds Rec_TD Fmb
+## 1.110010e+00 1.067517e+00 9.890684e-01 1.002885e+00
+1.956770e+00 1.073296e+00</code></pre>
+<p>We will analyze how well our model performs. The confusion matrix shows that out of the 26 actual Pro Bowlers, the model only correctly predicted 17 of them. The accuracy, sensitivity, specificity, precision, and AUC can be seen below. The AUC of 0.9868901 means our model performs very well.</p>
+<pre class="r"><code>full_dat$prob &lt;- predict(logfit, type = &#39;response&#39;)
+table(predict = as.numeric(full_dat$prob &gt; .5), truth = full_dat$Pro_Bowl) %&gt;% addmargins</code></pre>
+<pre><code>##        truth
+## predict   0   1 Sum
+##     0   437   9 446
+##     1     6  17  23
+##     Sum 443  26 469</code></pre>
+<pre class="r"><code>class_diag(full_dat$prob, full_dat$Pro_Bowl)</code></pre>
+<pre><code>##         acc      sens     spec       ppv       auc
+## 1 0.9680171 0.6538462 0.986456 0.7391304 0.9868901</code></pre>
+<p>A density plot of the log-odds can be found below. The ROC curve shows that the model is near perfect.</p>
+<pre class="r"><code>full_dat$logit &lt;- predict(logfit, type = &#39;link&#39;)
+full_dat &lt;- full_dat %&gt;% mutate(y = ifelse(Pro_Bowl == 1, &#39;Yes&#39;, &#39;No&#39;))
+full_dat %&gt;% ggplot() + geom_density(aes(logit, color = y, fill = y), alpha = .4) +
+  theme(legend.position = c(.85, .85)) + geom_vline(xintercept = 0) + 
+  xlab(&#39;logit (log-odds)&#39;) +
+  geom_rug(aes(logit, color = y)) +
+  geom_text(x = -11, y = .03, label = &#39;TN = 437&#39;) +
+  geom_text(x = -2.25, y=.008, label = &#39;FN = 9&#39;) +
+  geom_text(x = 1.2, y = .006, label = &#39;FP = 6&#39;) +
+  geom_text(x = 2, y = .04, label = &#39;TP = 17&#39;)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-13-1.png" width="768" style="display: block; margin: auto;" /></p>
+<pre class="r"><code>full_dat %&gt;% ggplot() + geom_roc(aes(d = Pro_Bowl, m = prob), n.cuts = 0)</code></pre>
+<p><img src="/Project2_files/figure-html/unnamed-chunk-13-2.png" width="768" style="display: block; margin: auto;" /></p>
+<p>We will perform a repeated random sub-sampling cross-validation of our logistic regression model to analyze out-of-sample performance. As seen below, our classification diagnostics are nearly identical to the ones above from our original logistic regression model. Our model performs very well out-of-sample with an AUC of 0.9870627.</p>
+<pre class="r"><code>set.seed(1234)
+fraction &lt;- 0.5
+train_n &lt;- floor(fraction * nrow(full_dat))
+iter &lt;- 500
+diags &lt;- NULL
+for(i in 1:iter){
+train_index &lt;- sample(1:nrow(full_dat), size=train_n)
+train &lt;- full_dat[train_index,]
+test &lt;- full_dat[-train_index,]
+truth &lt;- test$Pro_Bowl
+fit &lt;- glm(Pro_Bowl ~ Pos + G + GS + Att + Rush_Yds + Rush_TD + Tgt + Rec + Rec_Yds + 
+             Rec_TD + Fmb, data = full_dat, family = &#39;binomial&#39;)
+probs &lt;- predict(fit, newdata = test, type = &#39;response&#39;)
+diags &lt;- rbind(diags, class_diag(probs, truth))
+}
+summarize_all(diags, mean)</code></pre>
+<pre><code>##         acc      sens      spec      ppv       auc
+## 1 0.9683489 0.6583774 0.9865799 0.742186 0.9869567</code></pre>
+<p>We will perform a LASSO regression to determine which variables are the best predictors. These variables were rushing touchdowns, receptions, receiving yards, and receiving touchdowns.</p>
+<pre class="r"><code>y &lt;- as.matrix(full_dat$Pro_Bowl)
+x &lt;- model.matrix(Pro_Bowl ~ Pos + G + GS + Att + Rush_Yds + Rush_TD + Tgt + Rec + 
+                    Rec_Yds + Rec_TD + Fmb, data=full_dat)[,-1]
+x &lt;- scale(x)
+cv &lt;- cv.glmnet(x, y, family = &#39;binomial&#39;)
+lasso &lt;- glmnet(x, y, family = &#39;binomial&#39;, lambda = cv$lambda.1se)
+coef(lasso)</code></pre>
+<pre><code>## 13 x 1 sparse Matrix of class &quot;dgCMatrix&quot;
+##                      s0
+## (Intercept) -3.91046720
+## PosTE        .         
+## PosWR        .         
+## G            .         
+## GS           0.06058416
+## Att          .         
+## Rush_Yds     0.04013107
+## Rush_TD      0.42702558
+## Tgt          .         
+## Rec          0.41968621
+## Rec_Yds      0.69976807
+## Rec_TD       0.22800865
+## Fmb          .</code></pre>
+<p>We will now perform a repeated random sub-sampling cross-validation of our LASSO model using only the aforementioned variables. Our classification diagnostics show that the sensitivity and precision have dropped from the original cross-validation above. Our model still performs very well out-of-sample with an AUC of 0.9744991.</p>
+<pre class="r"><code>set.seed(1234)
+fraction &lt;- 0.5
+train_n &lt;- floor(fraction * nrow(full_dat)) 
+iter &lt;- 500 
+diags &lt;- NULL
+for(i in 1:iter){
+train_index &lt;- sample(1:nrow(full_dat), size=train_n)
+train &lt;- full_dat[train_index,]
+test &lt;- full_dat[-train_index,]
+truth &lt;- test$Pro_Bowl
+fit &lt;- glm(Pro_Bowl ~ Rush_TD + Rec + Rec_Yds + Rec_TD, data = full_dat,
+           family = &#39;binomial&#39;)
+probs &lt;- predict(fit, newdata = test, type = &#39;response&#39;)
+diags &lt;- rbind(diags, class_diag(probs,truth))
+}
+summarize_all(diags, mean)</code></pre>
+<pre><code>##         acc      sens      spec       ppv       auc
+## 1 0.9553787 0.4656792 0.9841574 0.6334904 0.9743867</code></pre>
+<p>Just for fun, let’s create a hypothetical scenario where I am an NFL player. We will give my hypothetical player stats for the season and see what the probability of me making the Pro Bowl is using our original logistic regression model. My hypothetical player is a wide receiver who was healthy for and started every game of the season. Like most wide receivers, my rushing stats are near nonexistant. Let’s say I had 5 attempts for 24 yards and 0 touchdowns. In terms of targets, we will say I had 134 targets and caught 111 of them for 1254 yards and 9 touchdowns. Let’s say I had 2 fumbles on the season. According to our logistic regression model, my hypothetical player has a 83.06% chance of making the Pro Bowl with those stats. Now, it’s important to know how the Pro Bowl works. Players are voted into the Pro Bowl by journalists and partly by fans. There is no algorithm that decides who makes the Pro Bowl. There is likely some bias in the journalists’ and fans’ votes towards players on the team they support or players who had good “stories” this season, such as a player that missed the entire last season due to a gruesome injury and performed very well this year. Because of this, even a “perfect” logistic regression model could fail to predict some players’ entry to the Pro Bowl.</p>
+<pre class="r"><code>Sagar &lt;- data.frame(Pos = &#39;WR&#39;, G = 16, GS = 16, Att = 5, Rush_Yds = 24, Rush_TD = 0, Tgt = 134, Rec = 111, Rec_Yds = 1254, Rec_TD = 9, Fmb = 2)
+predict(logfit, newdata = Sagar, type = &#39;response&#39;)</code></pre>
+<pre><code>##         1 
+## 0.8305501</code></pre>
+
+              <hr>
+              <div class="related-posts">
+                <h5>Related Posts</h5>
+                
+              </div>
+            </div>
+          </div>
+          <hr>
+        <div class="disqus">
+  <div id="disqus_thread"></div>
+  <script type="text/javascript">
+
+    (function() {
+      
+      
+      if (window.location.hostname == "localhost")
+        return;
+
+      var disqus_shortname = '';
+      var dsq = document.createElement('script'); dsq.type = 'text/javascript'; dsq.async = true;
+      dsq.src = '//' + disqus_shortname + '.disqus.com/embed.js';
+      (document.getElementsByTagName('head')[0] || document.getElementsByTagName('body')[0]).appendChild(dsq);
+    })();
+  </script>
+  <noscript>Please enable JavaScript to view the <a href="http://disqus.com/?ref_noscript">comments powered by Disqus.</a></noscript>
+  <a href="http://disqus.com/" class="dsq-brlink">comments powered by <span class="logo-disqus">Disqus</span></a>
+</div>
+        </div>
+      </div>
+      
+    </div>
+
+    
+    <footer>
+  <div id="footer">
+    <div class="container">
+      <p class="text-muted">&copy; All rights reserved. Powered by <a href="https://gohugo.io/">Hugo</a> and
+      <a href="http://www.github.com/nurlansu/hugo-sustain/">sustain</a> with ♥</p>
+    </div>
+  </div>
+</footer>
+<div class="footer"></div>
+
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+<script src="/js/docs.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script src="/js/ie10-viewport-bug-workaround.js"></script>
+
+
+    
+  </body>
+</html>
