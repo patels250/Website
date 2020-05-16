@@ -2,18 +2,18 @@
     "collab_server" : "",
     "contents" : "",
     "created" : 1589312189361.000,
-    "dirty" : true,
+    "dirty" : false,
     "encoding" : "UTF-8",
     "folds" : "",
     "hash" : "0",
     "id" : "C3714A18",
-    "lastKnownWriteTime" : 1589318966,
-    "last_content_update" : 1589318969747,
+    "lastKnownWriteTime" : 1589588719,
+    "last_content_update" : 1589588719577,
     "path" : "~/School/College/Computational Biology/Website/config.toml",
     "project_path" : "config.toml",
     "properties" : {
-        "cursorPosition" : "7,22",
-        "scrollLine" : "0"
+        "cursorPosition" : "29,16",
+        "scrollLine" : "14"
     },
     "read_only" : false,
     "read_only_alternatives" : [
