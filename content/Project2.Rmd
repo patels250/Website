@@ -1,5 +1,5 @@
 ---
-title: "Project 2 (Modeling, Testing, and Predicting)"
+title: "Modeling, Testing, and Predicting"
 author: "Sagar Patel"
 date: '2020-05-01'
 output:
@@ -37,7 +37,7 @@ library(plotROC)
 library(glmnet)
 ```
 
-# Introduction:
+# Introduction
 
 I am using the same datasets from Project 1. These datasets contain NFL player statistics from the 2019 regular season, as retrieved from Pro-Football-Reference. One dataset contains all rushing stats for applicable players and the other contains all receiving stats for applicable players. For the purposes of this project, these two datasets will be full joined together. We will also only be including skill position players (running back (RB), wide receiver (WR), and tight end (TE)) for this project. Variables that can be retrieved from other variables such as "yards per game" and trivial variables such as "longest play" have been excluded. 
 
@@ -74,7 +74,7 @@ full_dat <- full_dat %>% filter(Pos == 'RB' | Pos == 'WR' | Pos == 'TE') %>%
   mutate(Tot_Yds = Rec_Yds + Rush_Yds, Tot_TD = Rec_TD + Rush_TD) %>% arrange(Player)
 ```
 
-# MANOVA Test:
+# MANOVA Test
 
 First, we will perform a MANOVA test to see whether the number of total yards, total touchdowns, and fumbles show a mean difference across the three different positions (RB, WR, TE). With a p-value of 1.029e-09, this test was significant. 
 
@@ -100,7 +100,7 @@ pairwise.t.test(full_dat$Fmb, full_dat$Pos, p.adj = 'none')
 
 In terms of assumptions, it is not likely that this dataset meets any of the assumptions of a MANOVA test. Observations are not independent because if, for example, one running back is receiving lots of carries and yards, then other running backs on the same team are not. The data is also not normal. This is because EVERY player (of the given positions of course) who touched the ball even once during the season is included in this dataset. This means the data for each variable is heavily right/positively skewed.
 
-# Randomization Test:
+# Randomization Test
 
 We will perform a randomization test to see if the mean Total Yards differs between WRs and RBs. The hypotheses are as follows: 
 

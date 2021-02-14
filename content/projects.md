@@ -9,8 +9,8 @@ title: Projects
 ---
 ## Projects 
 
-Here are some projects I have recently completed:
+Here are some projects I have completed:
 
-- [Exploratory Data Analysis with Tidyverse Tools](/"Project1.Rmd"/)
+- [Exploratory Data Analysis with Tidyverse Tools](/Project1/)
 
-- [Modeling, Testing, and Classification](/"Project2.Rmd"/)
+- [Modeling, Testing, and Classification](/Project2/)

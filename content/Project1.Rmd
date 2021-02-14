@@ -1,17 +1,22 @@
 ---
-title: "Project 1 (Exploratory Data Analysis)"
+title: "Exploratory Data Analysis"
 author: "Sagar Patel"
 date: '2020-03-03'
 output:
-  html_document: default
-  pdf_document: default
+  html_document:
+    toc: yes
+    toc_float:
+      collapsed: no
+      smooth_scroll: yes
+  pdf_document:
+    toc: yes
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Introduction:
+# Introduction
 
 The two datasets I have chosen are NFL player statistics from the 2019 regular season, as retrieved from Pro-Football-Reference. The first dataset contains rushing stats for all applicable players (variables like rushing attempts, rushing yards, rushing touchdowns, etc.), and the second dataset contains receiving stats for all applicable players (variables like catches, receiving yards, receiving touchdowns, etc.). It is important to note that this list does *not* exclude quarterbacks, but it does exclude passing stats. That is, quarterbacks' rushing and receiving stats are included in the datasets but their passing stats are not. There is also a large number of players such as punters and offensive tackles involved in "trick plays" where they accumulate a very small number of touches/yards but are still included in the datasets.
 
@@ -39,7 +44,7 @@ receiving <- read_excel('Receiving.xlsx',
         'numeric', 'numeric', 'numeric'))
 ```
 
-# Tidying:
+# Tidying
 
 We will tidy the datasets by first making all positions uppercase, as the original datasets from Pro-Football-Reference had a mix of uppercase and lowercase positions. Then we will be removing variables that are deemed unnecessary. These are either variables that we can create ourselves (e.g. a yards per game variable could be created using the games and yards variables) or variables that will not serve a purpose in our analysis/visualization (such as the "longest play" variable). We will demonstrate the use of the pivot_longer() and pivot_wider() functions on the `rushing` dataset.
 
@@ -59,7 +64,7 @@ rushing <- rushing %>% pivot_wider(names_from = 'Stat', values_from = 'Value')
 head(rushing)
 ```
 
-# Joining/Merging:
+# Joining/Merging
 
 For these two datasets, we will be performing a full join. This is because we want a dataset of *all* players who carried or caught the football, but not necessarily did both. Because some players only did one (e.g. caught the ball but did not carry it), we will replace all NAs with 0s. An NA after joining is essentially a 0 because it means the player did not record anything for that statistic. We do not want to remove these players from the full dataset, but rather fill their stats with 0s so descriptive statistics can be determined. Then, we will group all positions that are not quarterback, running back, tight end, and wide receiver into one position called "Other". This will help us exclude the aforementioned trick players with very small stats if need be. Lastly, we will arrange alphabetically by first names.
 
@@ -71,7 +76,7 @@ full_dat$Pos[full_dat$Pos != 'QB' & full_dat$Pos != 'RB'&
 full_dat <- full_dat %>% arrange(Player)
 ```
 
-# Wrangling:
+# Wrangling
 
 The first way we will wrangle the data is by using the mutate() function to create two new variables. The first new variable is "Total Yards", which is the sum of "Receiving Yards" and "Rushing Yards". The second new variable is "Total TDs", which is the sum of "Receiving TDs" and "Rushing TDs". Then we will create a new dataset using the select() function called `nums`. `nums` is just the full data without categorical variables. This will be used to generate summary statistics. The `nums` dataframe will be tidied to create the `tidycor` dataframe which will later be used to generate a correlation heatmap. Lastly, we will create three new dataframes using combinations of group_by(), select(), summarize_all(), arrange(), and filter(). The `tm` dataframe contains total stats for each team in the league. The `tm_pos` dataframe contains total stats for each skill position group for each team in the league. The `top` dataframe contains the full stats for the top 30 players in total yards. These new dataframes will be used for visualization.
 
@@ -98,7 +103,7 @@ top <- full_dat %>% arrange(desc(Tot_Yds)) %>% top_n(30, Tot_Yds)
 head(top)
 ```
 
-# Visualizing:
+# Visualizing
 
 We will be making four different visualizations. The first three will be scatterplots that utilize the new dataframes we made above. The fourth will be a correlation heatmap of our numeric variables.
 
@@ -138,7 +143,7 @@ ggplot(tidycor, aes(rowname, name, fill=correlation)) + geom_tile() +
 
 This is a correlation heatmap of all of the numeric variables in the full dataset. As predicted in the introduction, most statistics are positively correlated. Receiving stats such as targets, receptions, yards, first downs, and touchdowns are all strongly positively correlated with each other, while rushing stats such as attempts, yards, first downs, and touchdowns are also strongly positively correlated with each other. It is important to note that rushing stats and receiving stats barely, if at all, correlate with each other. This makes sense because outside of a few outliers, wide receivers purely receive and running backs purely rush. An interesting correlation here is the one that age has with other variables. Most of the correlations that age has with other variables are negative. This makes sense because as players age, their performance generally tends to decline.
 
-# Dimensionality Reduction:
+# Dimensionality Reduction
 
 We will be performing PAM clustering on all quarterbacks, running backs, wide receivers, and tight ends. This is to exclude trick players who had very small stats. This data will still include players of the aforementioned positions that did not contribute much.
 
