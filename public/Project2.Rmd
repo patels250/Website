@@ -3,13 +3,13 @@ title: "Project 2 (Modeling, Testing, and Predicting)"
 author: "Sagar Patel"
 date: '2020-05-01'
 output:
-  pdf_document:
-    toc: yes
   html_document:
     toc: yes
     toc_float:
       collapsed: no
       smooth_scroll: yes
+  pdf_document:
+    toc: yes
 ---
 
 ```{r setup, include=FALSE}
