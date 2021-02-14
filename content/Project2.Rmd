@@ -37,7 +37,7 @@ library(plotROC)
 library(glmnet)
 ```
 
-#Introduction:
+# Introduction:
 
 I am using the same datasets from Project 1. These datasets contain NFL player statistics from the 2019 regular season, as retrieved from Pro-Football-Reference. One dataset contains all rushing stats for applicable players and the other contains all receiving stats for applicable players. For the purposes of this project, these two datasets will be full joined together. We will also only be including skill position players (running back (RB), wide receiver (WR), and tight end (TE)) for this project. Variables that can be retrieved from other variables such as "yards per game" and trivial variables such as "longest play" have been excluded. 
 
@@ -74,7 +74,7 @@ full_dat <- full_dat %>% filter(Pos == 'RB' | Pos == 'WR' | Pos == 'TE') %>%
   mutate(Tot_Yds = Rec_Yds + Rush_Yds, Tot_TD = Rec_TD + Rush_TD) %>% arrange(Player)
 ```
 
-#MANOVA Test:
+# MANOVA Test:
 
 First, we will perform a MANOVA test to see whether the number of total yards, total touchdowns, and fumbles show a mean difference across the three different positions (RB, WR, TE). With a p-value of 1.029e-09, this test was significant. 
 
@@ -100,7 +100,7 @@ pairwise.t.test(full_dat$Fmb, full_dat$Pos, p.adj = 'none')
 
 In terms of assumptions, it is not likely that this dataset meets any of the assumptions of a MANOVA test. Observations are not independent because if, for example, one running back is receiving lots of carries and yards, then other running backs on the same team are not. The data is also not normal. This is because EVERY player (of the given positions of course) who touched the ball even once during the season is included in this dataset. This means the data for each variable is heavily right/positively skewed.
 
-#Randomization Test:
+# Randomization Test:
 
 We will perform a randomization test to see if the mean Total Yards differs between WRs and RBs. The hypotheses are as follows: 
 
@@ -130,7 +130,7 @@ hist(rand_dist, main = '', ylab = ''); abline(v = -123.9151, col = 'red')
 mean(rand_dist > 123.9151 | rand_dist < -123.9151)
 ```
 
-#Linear Regression
+# Linear Regression
 
 We will perform a linear regression in which we attempt to predict the number of total touchdowns a player will score based on the number of rushing attempts and receiving targets he has. The coefficient estimates can be interpreted as follows: for every rushing attempt a player has above the mean, his total TDs will increase by 2.836e-02. For every receiving target a player has above the mean, his total TDs will increase by 4.841e-02. The adjusted R-squared value of 0.6746 means 67.46% of the variation in total TDs is explained by rushing attempts and receiving targets. A graph of the interaction can be found below. As shown in both the graph and the regression summary, the interaction is not significant.
 
@@ -168,7 +168,7 @@ coef(bootfit)
 samp_distn %>% t %>% as.data.frame %>% summarize_all(sd)
 ```
 
-#Logistic Regression
+# Logistic Regression
 
 We will perform a logistic regression in which we attempt to predict whether a player will make the Pro Bowl based on the number of games they played and their game statistics. The significant predictors were games played, rushing attempts, rushing yards, and receiving touchdowns. When we exponentiate the significant coefficients, we can see that for each game a player plays, his odds of making the Pro Bowl are multiplied by 0.458. For every rushing attempt a player has, his odds of making the Pro Bowl are multiplied by 0.872. For every rushing yard a player has, his odds of making the Pro Bowl are multiplied by 1.037. For every receiving touchdown a player has, his odds of making the Pro Bowl are multiplied by 1.957.
 
